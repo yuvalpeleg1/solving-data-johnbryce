@@ -1,15 +1,27 @@
-import json
+import boto3
+from dotenv import load_dotenv
 
-def get_ec2_instances() -> dict:
-    with open("ec2.json") as f:
-        response = json.load(f)
+load_dotenv()
 
+
+def get_ec2_instances(ec2) -> dict:
+    response = ec2.describe_instances()
     all_instances = [
         instance
         for reservation in response.get("Reservations", [])
         for instance in reservation.get("Instances", [])
     ]
     return all_instances
+
+
+def stop_instances(ec2, ids: list[str]):
+    response = ec2.stop_instances(InstanceIds=ids)
+    print(response)
+
+
+def start_instances(ec2, ids: list[str]):
+    response = ec2.start_instances(InstanceIds=ids)
+    print(response)
 
 
 def is_instance_running(instance: dict) -> bool:
@@ -23,5 +35,13 @@ def get_instances_running(instances: dict) -> dict:
 
 
 if __name__ == "__main__":
-    ec2 = get_ec2_instances()
-    print(get_instances_running(ec2))
+    ec2 = boto3.client("ec2")
+    instances = get_ec2_instances(ec2)
+    result = get_instances_running(instances)
+    print(result)
+
+# --------Gives instances Ids by resource--------
+# ec2 = boto3.resource("ec2")
+# instances = ec2.instances.all()
+# for instance in instances:
+#     print(instance)
