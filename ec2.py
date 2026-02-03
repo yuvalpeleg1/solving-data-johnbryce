@@ -1,6 +1,5 @@
 import json
 
-
 def get_ec2_instances() -> dict:
     with open("ec2.json") as f:
         response = json.load(f)
@@ -10,7 +9,6 @@ def get_ec2_instances() -> dict:
         for reservation in response.get("Reservations", [])
         for instance in reservation.get("Instances", [])
     ]
-    f.close()
     return all_instances
 
 
@@ -23,6 +21,7 @@ def get_instances_running(instances: dict) -> dict:
     instance_status = {"total": len(instances), "running": len(running_instances)}
     return instance_status
 
+
 if __name__ == "__main__":
     ec2 = get_ec2_instances()
-    get_instances_running(ec2)
+    print(get_instances_running(ec2))
