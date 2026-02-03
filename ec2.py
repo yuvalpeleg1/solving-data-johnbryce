@@ -40,8 +40,15 @@ if __name__ == "__main__":
     result = get_instances_running(instances)
     print(result)
 
-# --------Gives instances Ids by resource--------
-# ec2 = boto3.resource("ec2")
-# instances = ec2.instances.all()
-# for instance in instances:
-#     print(instance)
+    # --------Create and upload to S3--------
+    # s3 = boto3.client("s3")
+    # s3.create_bucket(Bucket="jb-yuvalp-devops-example")
+    # s3.upload_file(Filename="1.txt", Key="folder1/uploads/files.txt", Bucket="jb-yuvalp-devops-example")
+    # s3.put_object(Body=b"1.txt", Key="folder1/uploads/files.txt", Bucket="jb-yuvalp-devops-example")
+    # s3.download_file(Filename="new.txt" ,Key="folder1/uploads/files.txt", Bucket="jb-yuvalp-devops-example")
+
+    # --------Gives instances Ids by resource--------
+    # ec2 = boto3.resource("ec2")
+    # instances = ec2.instances.all()
+    # for instance in instances:
+    #     print(instance)
