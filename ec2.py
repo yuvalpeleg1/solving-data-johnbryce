@@ -54,35 +54,43 @@ def print_all(instances: dict):
         instance_state = instance["State"]["Name"].capitalize()
         entry = f"{index + 1}. {instance_type} ({instance_id}) - {instance_state}"
         print(entry)
-    while True:
-        user_choice = input(
-            """Choose a machine to change state (running=>stopped / stopped=>running): """
-        )
-        try:
-            user_choice = int(user_choice)
-            if user_choice > len(instances) or user_choice <= 0:
-                print("The number is out of range")
-            else:
-                break
-        except ValueError:
-            print("Enter only numbers")
-    flip_instance_state(instances[user_choice - 1])
+    if not args.list:
+        while True:
+            user_choice = input(
+                """Choose a machine to change state (running=>stopped / stopped=>running): """
+            )
+            try:
+                user_choice = int(user_choice)
+                if user_choice > len(instances) or user_choice <= 0:
+                    print("The number is out of range")
+                else:
+                    break
+            except ValueError:
+                print("Enter only numbers")
+        flip_instance_state(instances[user_choice - 1])
+
+    if args.start:
+        start_instances(ec2, args.start)
+    if args.stop:
+        stop_instances(ec2, args.stop)
 
 
-if __name__ == "__main__":
+def cli():
     parser = ArgumentParser()
     parser.add_argument("--list", action="store_true")
     parser.add_argument("--start", nargs="+", default=[])
     parser.add_argument("--stop", nargs="+", default=[])
-    args = parser.parse_args()
-    print(args)
-    exit()
+    return parser.parse_args()
 
-    # ec2 = boto3.client("ec2")
-    ec2 = None
+
+if __name__ == "__main__":
+    args = cli()
+    print(args)
+    ec2 = None  # = boto3.client("ec2")
     instances = get_ec2_instances(ec2)
-    result = print_all(instances)
-    print(result)
+    total = get_instances_running(instances)
+    all_instances_print = print_all(instances)
+    print(f"{total}\n {all_instances_print}")
 
     # --------Create and upload to S3--------
     # s3 = boto3.client("s3")
