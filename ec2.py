@@ -1,11 +1,17 @@
+import json
 import boto3
 from dotenv import load_dotenv
+from argparse import ArgumentParser
 
 load_dotenv()
 
 
 def get_ec2_instances(ec2) -> dict:
-    response = ec2.describe_instances()
+    if ec2 is None:
+        with open("ec2.json", "r") as f:
+            response = json.load(f)
+    else:
+        response = ec2.describe_instances()
     all_instances = [
         instance
         for reservation in response.get("Reservations", [])
@@ -34,10 +40,48 @@ def get_instances_running(instances: dict) -> dict:
     return instance_status
 
 
+def flip_instance_state(instance: dict):
+    if instance["State"]["Name"] == "running":
+        print("Stopping instance")
+    else:
+        print("Starting instance")
+
+
+def print_all(instances: dict):
+    for index, instance in enumerate(instances):
+        instance_type = instance["InstanceType"]
+        instance_id = instance["InstanceId"]
+        instance_state = instance["State"]["Name"].capitalize()
+        entry = f"{index + 1}. {instance_type} ({instance_id}) - {instance_state}"
+        print(entry)
+    while True:
+        user_choice = input(
+            """Choose a machine to change state (running=>stopped / stopped=>running): """
+        )
+        try:
+            user_choice = int(user_choice)
+            if user_choice > len(instances) or user_choice <= 0:
+                print("The number is out of range")
+            else:
+                break
+        except ValueError:
+            print("Enter only numbers")
+    flip_instance_state(instances[user_choice - 1])
+
+
 if __name__ == "__main__":
-    ec2 = boto3.client("ec2")
+    parser = ArgumentParser()
+    parser.add_argument("--list", action="store_true")
+    parser.add_argument("--start", nargs="+", default=[])
+    parser.add_argument("--stop", nargs="+", default=[])
+    args = parser.parse_args()
+    print(args)
+    exit()
+
+    # ec2 = boto3.client("ec2")
+    ec2 = None
     instances = get_ec2_instances(ec2)
-    result = get_instances_running(instances)
+    result = print_all(instances)
     print(result)
 
     # --------Create and upload to S3--------
